@@ -1,0 +1,7 @@
+Names: Sebastiaan Alvarez Rodriguez (s1810979), Brent Maas (s1826247)
+Machine: 0009755
+Problems solved: 1, 2 and 3
+
+If you hit 'g', gravity is activated. If you then hit 'w', gravity is disabled and gravity_well is enabled.
+
+If you hit 'w', gravity_well is activated. If you then hit 'g', nothing happens.
