@@ -6,6 +6,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <time.h>
+#include <functional>
 
 #define MAXPARTICLES 1000
 
@@ -31,7 +32,10 @@ const GLfloat low_shininess[] = { 5.0 };
 const GLfloat high_shininess[] = { 100.0 };
 const GLfloat mat_emission[] = { 0.3, 0.2, 0.2, 0.0 };
 
+const GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
+
 int spinflag = 1;
+float angle = 0;
 
 //windmill material values
 GLfloat diffWoodDarkgreen[] = {0.0, 0.35, 0.0, 1.0};
@@ -52,6 +56,84 @@ struct pinfo {
 	float v_x, v_y, v_z;
 	float r, g, b;
 } particles[MAXPARTICLES];
+
+const float dangle = 1.0;
+//Class to handle parts of the mill falling apart
+class MillPart {
+public:
+	MillPart(){
+		x = 0;
+		y = 0;
+		z = 0;
+		vx = 0;
+		vy = 0;
+		vz = 0;
+		angle = 0;
+		exploded = false;
+	}
+	MillPart(float x, float y, float z, std::function<void()> onDraw, std::function<void()> onTimer, std::function<void()> onHit){
+		this->x = x;
+		this->y = y;
+		this->z = z;
+		vx = 0;
+		vy = 0;
+		vz = 0;
+		angle = 0;
+		this->onDraw = onDraw;
+		this->onTimer = onTimer;
+		this->onHit = onHit;
+		exploded = false;
+	}
+	void draw(){
+		glTranslatef(x, y, z);
+		onDraw();
+		glTranslatef(-x, -y, -z);
+	}
+	void update(float dt){
+		if(exploded){
+			if(gravity_toggle) vy -= g * dt;
+			if(well_toggle){
+				float dx = -x;
+				float dy = 50 - y;
+				float dz = -z;
+				float d = sqrt(dx*dx + dy*dy + dz*dz);
+				dx /= d;
+				dy /= d;
+				dz /= d;
+				vx += dx * G / (d*d);
+				vy += dy * G / (d*d);
+				vz += dz * G / (d*d);
+			}
+			onTimer();
+			x += vx * dt;
+			y += vy * dt;
+			z += vz * dt;
+			if(gravity_toggle && y <= 0){
+				y = 0;
+				vx = 0;
+				vy = 0;
+				vz = 0;
+			}
+		}
+	}
+	void explode(){
+		if(!exploded){
+			onHit();
+			vx = 2 - 4 * (rand() / (float) RAND_MAX);
+			vy = 5 * (rand() / (float) RAND_MAX);
+			vz = 2 - 4 * (rand() / (float) RAND_MAX);
+		}
+		exploded = true;
+	}
+	float x, y, z, vx, vy, vz, angle;
+	std::function<void()> onDraw, onTimer, onHit;
+	bool exploded;
+};
+
+//8 base house parts, 4 base house roof parts, 8 shed parts, 4 shed roof parts,
+//6 struts, 1 walkway, 1 windmill base, 3 windmill body parts, 1 cap, 1 blades = 37 parts
+const int numMillParts = 37;
+MillPart parts[numMillParts];
 
 void fireCannon() {
 	for (int i = 0; i < MAXPARTICLES; i++) {
@@ -96,6 +178,12 @@ void drawOneParticle() {
 }
 
 void drawParticles() {
+	if (well_toggle) {
+		glTranslatef(0, 50, 0);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, white);
+		drawOneParticle();
+		glTranslatef(0, -50, 0);
+	}
 	for (int i = 0;i < MAXPARTICLES;i++) {
 		glTranslatef(particles[i].x, particles[i].y, particles[i].z);
 		glScalef(particles[i].width, particles[i].width, particles[i].width);
@@ -106,17 +194,13 @@ void drawParticles() {
 		glScalef(1.0 / particles[i].width, 1.0 / particles[i].width, 1.0 / particles[i].width);
 		glTranslatef(-particles[i].x, -particles[i].y, -particles[i].z);
 	}
-	if (well_toggle) {
-		glPushMatrix();
-		glTranslatef(0, 50, 0);
-		glColor3f(1, 1, 1);
-		drawOneParticle();
-		glPopMatrix();
-	}
 }
 
 void keyboard(unsigned char key, int x, int y) {
 	switch (key) {
+	case '1': //test windmill explosion
+		for(int i = 0;i < 11;i++) parts[i].explode();
+		break;
 	case '4': //move the light up
 		ly++;
 		break;
@@ -230,8 +314,203 @@ void drawBox(float x, float y, float z, float width, float height, float depth){
 }
 
 //https://molens.hippoextranet.nl/07071954/noordholland/752DeHuisman-Zaandam-1.jpg
+void initWindmill(){
+	//Base house parts
+	parts[0] = MillPart(17.5, 0, -2.5,[](){
+		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
+		drawBox(-2.5, 0, -2.5, 5, 5, 5);
+	}, [](){}, [](){
+		parts[4].explode();
+	});
+	parts[1] = MillPart(17.5, 0, 2.5,[](){
+		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
+		drawBox(-2.5, 0, -2.5, 5, 5, 5);
+	}, [](){}, [](){
+		parts[5].explode();
+	});
+	parts[2] = MillPart(22.5, 0, 2.5,[](){
+		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
+		drawBox(-2.5, 0, -2.5, 5, 5, 5);
+	}, [](){}, [](){
+		parts[6].explode();
+	});
+	parts[3] = MillPart(22.5, 0, -2.5,[](){
+		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
+		drawBox(-2.5, 0, -2.5, 5, 5, 5);
+	}, [](){}, [](){
+		parts[7].explode();
+	});
+	parts[4] = MillPart(17.5, 5, -2.5,[](){
+		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
+		drawBox(-2.5, 0, -2.5, 5, 5, 5);
+	}, [](){}, [](){
+		parts[8].explode();
+	});
+	parts[5] = MillPart(17.5, 5, 2.5,[](){
+		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
+		drawBox(-2.5, 0, -2.5, 5, 5, 5);
+	}, [](){}, [](){
+		parts[9].explode();
+	});
+	parts[6] = MillPart(22.5, 5, 2.5,[](){
+		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
+		drawBox(-2.5, 0, -2.5, 5, 5, 5);
+	}, [](){}, [](){
+		parts[10].explode();
+	});
+	parts[7] = MillPart(22.5, 5, -2.5,[](){
+		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
+		drawBox(-2.5, 0, -2.5, 5, 5, 5);
+	}, [](){}, [](){
+		//parts[11].explode();
+	});
+	
+	//Base house roof
+	parts[8] = MillPart(17.5, 10, -2.5, [](){
+		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
+		glBegin(GL_TRIANGLE_STRIP);
+		glNormal3f(0, 0, -1);
+		glVertex3f(-2.5, 0, -2.5);
+		glVertex3f(0, 0, -2.5);
+		glVertex3f(0, 2.5, -2.5);
+		glVertex3f(2.5, 0, -2.5);
+		glVertex3f(2.5, 2.5, -2.5);
+		glEnd();
+		glBegin(GL_TRIANGLE_STRIP);
+		glNormal3f(0, 0, 1);
+		glVertex3f(-2.5, 0, 2.5);
+		glVertex3f(0, 0, 2.5);
+		glVertex3f(0, 2.5, 2.5);
+		glVertex3f(2.5, 0, 2.5);
+		glVertex3f(2.5, 2.5, 2.5);
+		glEnd();
+		glBegin(GL_QUADS);
+		glNormal3f(0, -1, 0);
+		glVertex3f(-2.5, 0, -2.5);
+		glVertex3f(-2.5, 0, 2.5);
+		glVertex3f(2.5, 0, 2.5);
+		glVertex3f(2.5, 0, -2.5);
+		glNormal3f(1, 0, 0);
+		glVertex3f(2.5, 0, -2.5);
+		glVertex3f(2.5, 0, 2.5);
+		glVertex3f(2.5, 2.5, 2.5);
+		glVertex3f(2.5, 2.5, -2.5);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffRooftiles);
+		glNormal3f(-1, 1, 0);
+		glVertex3f(-2.5, 0, -2.5);
+		glVertex3f(-2.5, 0, 2.5);
+		glVertex3f(0, 2.5, 2.5);
+		glVertex3f(0, 2.5, -2.5);
+		glNormal3f(0, 1, 0);
+		glVertex3f(0, 2.5, 2.5);
+		glVertex3f(0, 2.5, -2.5);
+		glVertex3f(2.5, 2.5, -2.5);
+		glVertex3f(2.5, 2.5, 2.5);
+		glEnd();
+	}, [](){}, [](){
+		
+	});
+	parts[9] = MillPart(17.5, 10, 2.5, [](){
+		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
+		glBegin(GL_TRIANGLE_STRIP);
+		glNormal3f(0, 0, -1);
+		glVertex3f(-2.5, 0, -2.5);
+		glVertex3f(0, 0, -2.5);
+		glVertex3f(0, 2.5, -2.5);
+		glVertex3f(2.5, 0, -2.5);
+		glVertex3f(2.5, 2.5, -2.5);
+		glEnd();
+		glBegin(GL_TRIANGLE_STRIP);
+		glNormal3f(0, 0, 1);
+		glVertex3f(-2.5, 0, 2.5);
+		glVertex3f(0, 0, 2.5);
+		glVertex3f(0, 2.5, 2.5);
+		glVertex3f(2.5, 0, 2.5);
+		glVertex3f(2.5, 2.5, 2.5);
+		glEnd();
+		glBegin(GL_QUADS);
+		glNormal3f(0, -1, 0);
+		glVertex3f(-2.5, 0, -2.5);
+		glVertex3f(-2.5, 0, 2.5);
+		glVertex3f(2.5, 0, 2.5);
+		glVertex3f(2.5, 0, -2.5);
+		glNormal3f(1, 0, 0);
+		glVertex3f(2.5, 0, -2.5);
+		glVertex3f(2.5, 0, 2.5);
+		glVertex3f(2.5, 2.5, 2.5);
+		glVertex3f(2.5, 2.5, -2.5);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffRooftiles);
+		glNormal3f(-1, 1, 0);
+		glVertex3f(-2.5, 0, -2.5);
+		glVertex3f(-2.5, 0, 2.5);
+		glVertex3f(0, 2.5, 2.5);
+		glVertex3f(0, 2.5, -2.5);
+		glNormal3f(0, 1, 0);
+		glVertex3f(0, 2.5, 2.5);
+		glVertex3f(0, 2.5, -2.5);
+		glVertex3f(2.5, 2.5, -2.5);
+		glVertex3f(2.5, 2.5, 2.5);
+		glEnd();
+	}, [](){}, [](){
+		
+	});
+	parts[10] = MillPart(22.5, 10, -2.5, [](){
+		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
+		glBegin(GL_TRIANGLE_STRIP);
+		glNormal3f(0, 0, -1);
+		glVertex3f(-2.5, 0, -2.5);
+		glVertex3f(-2.5, 2.5, -2.5);
+		glVertex3f(0, 0, -2.5);
+		glVertex3f(0, 2.5, -2.5);
+		glVertex3f(2.5, 0, -2.5);
+		glEnd();
+		glBegin(GL_TRIANGLE_STRIP);
+		glNormal3f(0, 0, 1);
+		glVertex3f(-2.5, 0, 2.5);
+		glVertex3f(-2.5, 2.5, 2.5);
+		glVertex3f(0, 0, 2.5);
+		glVertex3f(0, 2.5, 2.5);
+		glVertex3f(2.5, 0, 2.5);
+		glEnd();
+		glBegin(GL_QUADS);
+		glVertex3f(-2.5, 0, -2.5);
+		glVertex3f(-2.5, 0, 2.5);
+		glVertex3f(2.5, 0, 2.5);
+		glVertex3f(2.5, 0, -2.5);
+		glEnd();
+	}, [](){}, [](){
+		
+	});
+}
+
 void drawWindmill(){
-	glMaterialfv(GL_FRONT, GL_SHININESS, no_shininess);
+	for(int i = 0;i < 11;i++) parts[i].draw();
+	return;
+	
+	glTranslatef(20, 0, 0);
+	glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
 	//Base house
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
@@ -647,6 +926,28 @@ void drawWindmill(){
 	glVertex3f(0, 23.5, 2);
 	glVertex3f(1.25, 22, 2.5);
 	glEnd();
+	
+	//Blades
+	glTranslatef(0, 22.5, 0);
+	glRotatef(angle, 0, 0, 1);
+	//axle
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
+	drawBox(-0.1, -0.1, 0, 0.2, 0.2, 4.0);
+	drawBox(-0.1, -7.0, 3.8, 0.2, 14.0, 0.2);
+	drawBox(-7.0, -0.1, 3.8, 14.0, 0.2, 0.2);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodWhite);
+	drawBox(-0.1, -0.1, 4.0, 0.2, 0.2, 0.1);
+	//sheets
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffFabricWhite);
+	glMaterialfv(GL_FRONT, GL_SHININESS, no_shininess);
+	drawBox(0.5, -1.55, 3.85, 6.4, 1.5, 0.1);
+	drawBox(-6.9, -0.05, 3.85, 6.4, 1.5, 0.1);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffFabricOrange);
+	drawBox(-0.05, 0.5, 3.85, 1.5, 6.4, 0.1);
+	drawBox(-1.55, -6.9, 3.85, 1.5, 6.4, 0.1);
+	glRotatef(-angle, 0, 0, 1);
+	glTranslatef(0, -22.5, 0);
+	glTranslatef(0, 0, -20);
 }
 
 void update() {
@@ -682,9 +983,7 @@ void update() {
 	glVertex3f(-40.0, 0.0, -40.0);
 	glEnd();
 	
-	glTranslatef(20, 0, 0);
 	drawWindmill();
-	glTranslatef(-20, 0, 0);
 	drawParticles();
 	
 	glPushMatrix();
@@ -702,6 +1001,8 @@ void update() {
 	}
 	
 	glutSwapBuffers();
+	
+	angle += dangle;
 }
 
 void timer(int value) {
@@ -740,6 +1041,9 @@ void timer(int value) {
 		particles[i].x = particles[i].x + particles[i].v_x * time;
 		particles[i].z = particles[i].z + particles[i].v_z * time;
 	}
+	
+	for(int i = 0;i < 11;i++) parts[i].update(time);
+	
 	glutPostRedisplay();
 	glutTimerFunc(50, &timer, 0);
 }
@@ -749,7 +1053,7 @@ void reshape(int w, int h) {
 	glMatrixMode(GL_PROJECTION); //set the matrix to projection
 
 	glLoadIdentity();
-	gluPerspective(60, (GLfloat) w / (GLfloat) h, 1.0, 100.0); //set the perspective (angle of sight, width, height, , depth)
+	gluPerspective(60, (GLfloat) w / (GLfloat) h, 1.0, 1000.0); //set the perspective (angle of sight, width, height, , depth)
 	glMatrixMode(GL_MODELVIEW); //set the matrix back to model
 }
 
@@ -766,8 +1070,11 @@ int main(int argc, char *argv[]) {
 	glEnable(GL_LIGHT1);
 	glShadeModel(GL_SMOOTH);
 	glMatrixMode(GL_PROJECTION);
-	gluPerspective(120.0, 1.0, 0.001, 1000.0);
+	gluPerspective(120.0, 1.0, 1.0, 1000.0);
 	glEnable(GL_DEPTH_TEST);
+	
+	initWindmill();
+	
 	glutDisplayFunc(&update);
 	glutIdleFunc(&update);
 	glutReshapeFunc(&reshape);
