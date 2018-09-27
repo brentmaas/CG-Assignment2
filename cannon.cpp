@@ -120,7 +120,7 @@ public:
 		if(!exploded){
 			onHit();
 			vx = 2 - 4 * (rand() / (float) RAND_MAX);
-			vy = 5 * (rand() / (float) RAND_MAX);
+			vy = 4 + 4 * (rand() / (float) RAND_MAX);
 			vz = 2 - 4 * (rand() / (float) RAND_MAX);
 		}
 		exploded = true;
@@ -131,8 +131,8 @@ public:
 };
 
 //8 base house parts, 4 base house roof parts, 8 shed parts, 4 shed roof parts,
-//6 struts, 1 walkway, 1 windmill base, 3 windmill body parts, 1 cap, 1 blades = 37 parts
-const int numMillParts = 37;
+//1 walkway, 1 windmill base, 1 windmill body, 1 cap, 1 blades = 29 parts
+const int numMillParts = 29;
 MillPart parts[numMillParts];
 
 void fireCannon() {
@@ -199,7 +199,7 @@ void drawParticles() {
 void keyboard(unsigned char key, int x, int y) {
 	switch (key) {
 	case '1': //test windmill explosion
-		for(int i = 0;i < 11;i++) parts[i].explode();
+		for(int i = 0;i < 15;i++) parts[i].explode();
 		break;
 	case '4': //move the light up
 		ly++;
@@ -322,7 +322,7 @@ void initWindmill(){
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
 		drawBox(-2.5, 0, -2.5, 5, 5, 5);
 	}, [](){}, [](){
-		parts[4].explode();
+		parts[4].explode(); //Part above also explodes
 	});
 	parts[1] = MillPart(17.5, 0, 2.5,[](){
 		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
@@ -330,7 +330,7 @@ void initWindmill(){
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
 		drawBox(-2.5, 0, -2.5, 5, 5, 5);
 	}, [](){}, [](){
-		parts[5].explode();
+		parts[5].explode(); //Part above also explodes
 	});
 	parts[2] = MillPart(22.5, 0, 2.5,[](){
 		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
@@ -338,7 +338,7 @@ void initWindmill(){
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
 		drawBox(-2.5, 0, -2.5, 5, 5, 5);
 	}, [](){}, [](){
-		parts[6].explode();
+		parts[6].explode(); //Part above also explodes
 	});
 	parts[3] = MillPart(22.5, 0, -2.5,[](){
 		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
@@ -346,7 +346,7 @@ void initWindmill(){
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
 		drawBox(-2.5, 0, -2.5, 5, 5, 5);
 	}, [](){}, [](){
-		parts[7].explode();
+		parts[7].explode(); //Part above also explodes
 	});
 	parts[4] = MillPart(17.5, 5, -2.5,[](){
 		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
@@ -354,7 +354,7 @@ void initWindmill(){
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
 		drawBox(-2.5, 0, -2.5, 5, 5, 5);
 	}, [](){}, [](){
-		parts[8].explode();
+		parts[8].explode(); //Part above also explodes
 	});
 	parts[5] = MillPart(17.5, 5, 2.5,[](){
 		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
@@ -362,7 +362,7 @@ void initWindmill(){
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
 		drawBox(-2.5, 0, -2.5, 5, 5, 5);
 	}, [](){}, [](){
-		parts[9].explode();
+		parts[9].explode(); //Part above also explodes
 	});
 	parts[6] = MillPart(22.5, 5, 2.5,[](){
 		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
@@ -370,7 +370,7 @@ void initWindmill(){
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
 		drawBox(-2.5, 0, -2.5, 5, 5, 5);
 	}, [](){}, [](){
-		parts[10].explode();
+		parts[10].explode(); //Part above also explodes
 	});
 	parts[7] = MillPart(22.5, 5, -2.5,[](){
 		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
@@ -378,7 +378,7 @@ void initWindmill(){
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
 		drawBox(-2.5, 0, -2.5, 5, 5, 5);
 	}, [](){}, [](){
-		//parts[11].explode();
+		parts[11].explode(); //Part above also explodes
 	});
 	
 	//Base house roof
@@ -426,7 +426,7 @@ void initWindmill(){
 		glVertex3f(2.5, 2.5, 2.5);
 		glEnd();
 	}, [](){}, [](){
-		
+		parts[12].explode(); //Part above also explodes
 	});
 	parts[9] = MillPart(17.5, 10, 2.5, [](){
 		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
@@ -472,7 +472,7 @@ void initWindmill(){
 		glVertex3f(2.5, 2.5, 2.5);
 		glEnd();
 	}, [](){}, [](){
-		
+		parts[12].explode(); //Part above also explodes
 	});
 	parts[10] = MillPart(22.5, 10, -2.5, [](){
 		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
@@ -495,10 +495,444 @@ void initWindmill(){
 		glVertex3f(2.5, 0, 2.5);
 		glEnd();
 		glBegin(GL_QUADS);
+		glNormal3f(0, -1, 0);
 		glVertex3f(-2.5, 0, -2.5);
 		glVertex3f(-2.5, 0, 2.5);
 		glVertex3f(2.5, 0, 2.5);
 		glVertex3f(2.5, 0, -2.5);
+		glNormal3f(-1, 0, 0);
+		glVertex3f(-2.5, 0, -2.5);
+		glVertex3f(-2.5, 0, 2.5);
+		glVertex3f(-2.5, 2.5, 2.5);
+		glVertex3f(-2.5, 2.5, -2.5);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffRooftiles);
+		glNormal3f(0, 1, 0);
+		glVertex3f(-2.5, 2.5, 2.5);
+		glVertex3f(-2.5, 2.5, -2.5);
+		glVertex3f(0, 2.5, -2.5);
+		glVertex3f(0, 2.5, 2.5);
+		glEnd();
+	}, [](){}, [](){
+		parts[12].explode(); //Part above also explodes
+	});
+	parts[11] = MillPart(22.5, 10, 2.5, [](){
+		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
+		glBegin(GL_TRIANGLE_STRIP);
+		glNormal3f(0, 0, -1);
+		glVertex3f(-2.5, 0, -2.5);
+		glVertex3f(-2.5, 2.5, -2.5);
+		glVertex3f(0, 0, -2.5);
+		glVertex3f(0, 2.5, -2.5);
+		glVertex3f(2.5, 0, -2.5);
+		glEnd();
+		glBegin(GL_TRIANGLE_STRIP);
+		glNormal3f(0, 0, 1);
+		glVertex3f(-2.5, 0, 2.5);
+		glVertex3f(-2.5, 2.5, 2.5);
+		glVertex3f(0, 0, 2.5);
+		glVertex3f(0, 2.5, 2.5);
+		glVertex3f(2.5, 0, 2.5);
+		glEnd();
+		glBegin(GL_QUADS);
+		glNormal3f(0, -1, 0);
+		glVertex3f(-2.5, 0, -2.5);
+		glVertex3f(-2.5, 0, 2.5);
+		glVertex3f(2.5, 0, 2.5);
+		glVertex3f(2.5, 0, -2.5);
+		glNormal3f(-1, 0, 0);
+		glVertex3f(-2.5, 0, -2.5);
+		glVertex3f(-2.5, 0, 2.5);
+		glVertex3f(-2.5, 2.5, 2.5);
+		glVertex3f(-2.5, 2.5, -2.5);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffRooftiles);
+		glNormal3f(0, 1, 0);
+		glVertex3f(-2.5, 2.5, 2.5);
+		glVertex3f(-2.5, 2.5, -2.5);
+		glVertex3f(0, 2.5, -2.5);
+		glVertex3f(0, 2.5, 2.5);
+		glEnd();
+	}, [](){}, [](){
+		parts[12].explode(); //Part above also explodes
+	});
+	
+	//Walkway
+	parts[12] = MillPart(20, 10.0, 0, [](){
+		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
+		glBegin(GL_QUADS);
+		glNormal3f(0, 1, 0);
+		glVertex3f(-2.5, 2.51, 5);
+		glVertex3f(-2.5, 2.51, -5);
+		glVertex3f(2.5, 2.51, -5);
+		glVertex3f(2.5, 2.51, 5);
+		glVertex3f(-5, 2.51, 2.5);
+		glVertex3f(-5, 2.51, -2.5);
+		glVertex3f(5, 2.51, -2.5);
+		glVertex3f(5, 2.51, 2.5);
+		glVertex3f(5, 2.51, 2.5);
+		glVertex3f(2.5, 2.51, 5);
+		glVertex3f(-5, 2.51, -2.5);
+		glVertex3f(-2.5, 2.51, -5);
+		glVertex3f(-5, 2.51, 2.5);
+		glVertex3f(-2.5, 2.51, 5);
+		glVertex3f(5, 2.51, -2.5);
+		glVertex3f(2.5, 2.51, -5);
+		glEnd();
+		//struts
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodWhite);
+		drawBox(-4.1, 0, -2.6, 0.2, 2.49, 0.2);
+		drawBox(-4.1, 0, -0.1, 0.2, 2.49, 0.2);
+		drawBox(-4.1, 0, 2.4, 0.2, 2.49, 0.2);
+		drawBox(3.9, 0, -2.6, 0.2, 2.49, 0.2);
+		drawBox(3.9, 0, -0.1, 0.2, 2.49, 0.2);
+		drawBox(3.9, 0, 2.4, 0.2, 2.49, 0.2);
+		//fences
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodDarkgreen);
+		drawBox(2.4, 2.5, 4.9, 0.2, 1, 0.2);
+		drawBox(-2.6, 2.5, 4.9, 0.2, 1, 0.2);
+		drawBox(-5.1, 2.5, 2.4, 0.2, 1, 0.2);
+		drawBox(-5.1, 2.5, -2.6, 0.2, 1, 0.2);
+		drawBox(-2.6, 2.5, -5.1, 0.2, 1, 0.2);
+		drawBox(2.4, 2.5, -5.1, 0.2, 1, 0.2);
+		drawBox(4.9, 2.5, -2.6, 0.2, 1, 0.2);
+		drawBox(4.9, 2.5, 2.4, 0.2, 1, 0.2);
+		glBegin(GL_QUADS);
+		glNormal3f(1, 0, 0);
+		glVertex3f(5, 2.8, 2.5);
+		glVertex3f(5, 2.8, -2.5);
+		glVertex3f(5, 3, -2.5);
+		glVertex3f(5, 3, 2.5);
+		glNormal3f(1, 0, 1);
+		glVertex3f(5, 2.8, 2.5);
+		glVertex3f(2.5, 2.8, 5);
+		glVertex3f(2.5, 3, 5);
+		glVertex3f(5, 3, 2.5);
+		glNormal3f(0, 0, 1);
+		glVertex3f(2.5, 2.8, 5);
+		glVertex3f(-2.5, 2.8, 5);
+		glVertex3f(-2.5, 3, 5);
+		glVertex3f(2.5, 3, 5);
+		glNormal3f(-1, 0, 1);
+		glVertex3f(-2.5, 2.8, 5);
+		glVertex3f(-5, 2.8, 2.5);
+		glVertex3f(-5, 3, 2.5);
+		glVertex3f(-2.5, 3, 5);
+		glNormal3f(-1, 0, 0);
+		glVertex3f(-5, 2.8, 2.5);
+		glVertex3f(-5, 2.8, -2.5);
+		glVertex3f(-5, 3, -2.5);
+		glVertex3f(-5, 3, 2.5);
+		glNormal3f(-1, 0, -1);
+		glVertex3f(-5, 2.8, -2.5);
+		glVertex3f(-2.5, 2.8, -5);
+		glVertex3f(-2.5, 3, -5);
+		glVertex3f(-5, 3, -2.5);
+		glNormal3f(0, 0, -1);
+		glVertex3f(-2.5, 2.8, -5);
+		glVertex3f(2.5, 2.8, -5);
+		glVertex3f(2.5, 3, -5);
+		glVertex3f(-2.5, 3, -5);
+		glNormal3f(1, 0, -1);
+		glVertex3f(2.5, 2.8, -5);
+		glVertex3f(5, 2.8, -2.5);
+		glVertex3f(5, 3, -2.5);
+		glVertex3f(2.5, 3, -5);
+		glEnd();
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodWhite);
+		glBegin(GL_QUADS);
+		glNormal3f(1, 0, 0);
+		glVertex3f(5, 3.3, 2.5);
+		glVertex3f(5, 3.3, -2.5);
+		glVertex3f(5, 3.5, -2.5);
+		glVertex3f(5, 3.5, 2.5);
+		glNormal3f(1, 0, 1);
+		glVertex3f(5, 3.3, 2.5);
+		glVertex3f(2.5, 3.3, 5);
+		glVertex3f(2.5, 3.5, 5);
+		glVertex3f(5, 3.5, 2.5);
+		glNormal3f(0, 0, 1);
+		glVertex3f(2.5, 3.3, 5);
+		glVertex3f(-2.5, 3.3, 5);
+		glVertex3f(-2.5, 3.5, 5);
+		glVertex3f(2.5, 3.5, 5);
+		glNormal3f(-1, 0, 1);
+		glVertex3f(-2.5, 3.3, 5);
+		glVertex3f(-5, 3.3, 2.5);
+		glVertex3f(-5, 3.5, 2.5);
+		glVertex3f(-2.5, 3.5, 5);
+		glNormal3f(-1, 0, 0);
+		glVertex3f(-5, 3.3, 2.5);
+		glVertex3f(-5, 3.3, -2.5);
+		glVertex3f(-5, 3.5, -2.5);
+		glVertex3f(-5, 3.5, 2.5);
+		glNormal3f(-1, 0, -1);
+		glVertex3f(-5, 3.3, -2.5);
+		glVertex3f(-2.5, 3.3, -5);
+		glVertex3f(-2.5, 3.5, -5);
+		glVertex3f(-5, 3.5, -2.5);
+		glNormal3f(0, 0, -1);
+		glVertex3f(-2.5, 3.3, -5);
+		glVertex3f(2.5, 3.3, -5);
+		glVertex3f(2.5, 3.5, -5);
+		glVertex3f(-2.5, 3.5, -5);
+		glNormal3f(1, 0, -1);
+		glVertex3f(2.5, 3.3, -5);
+		glVertex3f(5, 3.3, -2.5);
+		glVertex3f(5, 3.5, -2.5);
+		glVertex3f(2.5, 3.5, -5);
+		glEnd();
+	}, [](){}, [](){
+		parts[13].explode(); //Part above also explodes
+	});
+	
+	//Windmill base
+	parts[13] = MillPart(20, 12.5, 0, [](){
+		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodWhite);
+		glBegin(GL_QUADS);
+		glNormal3f(1, 0, 0);
+		glVertex3f(2.5, 0, -1.25);
+		glVertex3f(2.5, 0, 1.25);
+		glVertex3f(2.5, 2.5, 1.25);
+		glVertex3f(2.5, 2.5, -1.25);
+		glNormal3f(1, 0, 1);
+		glVertex3f(2.5, 0, 1.25);
+		glVertex3f(1.25, 0, 2.5);
+		glVertex3f(1.25, 2.5, 2.5);
+		glVertex3f(2.5, 2.5, 1.25);
+		glNormal3f(0, 0, 1);
+		glVertex3f(1.25, 0, 2.5);
+		glVertex3f(-1.25, 0, 2.5);
+		glVertex3f(-1.25, 2.5, 2.5);
+		glVertex3f(1.25, 2.5, 2.5);
+		glNormal3f(-1, 0, 1);
+		glVertex3f(-2.5, 0, 1.25);
+		glVertex3f(-1.25, 0, 2.5);
+		glVertex3f(-1.25, 2.5, 2.5);
+		glVertex3f(-2.5, 2.5, 1.25);
+		glNormal3f(-1, 0, 0);
+		glVertex3f(-2.5, 0, -1.25);
+		glVertex3f(-2.5, 0, 1.25);
+		glVertex3f(-2.5, 2.5, 1.25);
+		glVertex3f(-2.5, 2.5, -1.25);
+		glNormal3f(-1, 0, -1);
+		glVertex3f(-1.25, 0, -2.5);
+		glVertex3f(-2.5, 0, -1.25);
+		glVertex3f(-2.5, 2.5, -1.25);
+		glVertex3f(-1.25, 2.5, -2.5);
+		glNormal3f(0, 0, -1);
+		glVertex3f(1.25, 0, -2.5);
+		glVertex3f(-1.25, 0, -2.5);
+		glVertex3f(-1.25, 2.5, -2.5);
+		glVertex3f(1.25, 2.5, -2.5);
+		glNormal3f(1, 0, -1);
+		glVertex3f(2.5, 0, -1.25);
+		glVertex3f(1.25, 0, -2.5);
+		glVertex3f(1.25, 2.5, -2.5);
+		glVertex3f(2.5, 2.5, -1.25);
+		glNormal3f(0, -1, 0);
+		glVertex3f(2.5, 0, 1.25);
+		glVertex3f(1.25, 0, 2.5);
+		glVertex3f(-2.5, 0, -1.25);
+		glVertex3f(-1.25, 0, -2.5);
+		glVertex3f(2.5, 0, -1.25);
+		glVertex3f(1.25, 0, -2.5);
+		glVertex3f(-2.5, 0, 1.25);
+		glVertex3f(-1.25, 0, 2.5);
+		glVertex3f(2.5, 0, 1.25);
+		glVertex3f(2.5, 0, -1.25);
+		glVertex3f(-2.5, 0, -1.25);
+		glVertex3f(-2.5, 0, 1.25);
+		glVertex3f(1.25, 0, 2.5);
+		glVertex3f(1.25, 0, -2.5);
+		glVertex3f(-1.25, 0, -2.5);
+		glVertex3f(-1.25, 0, 2.5);
+		glNormal3f(0, 1, 0);
+		glVertex3f(2.5, 2.5, 1.25);
+		glVertex3f(1.25, 2.5, 2.5);
+		glVertex3f(-2.5, 2.5, -1.25);
+		glVertex3f(-1.25, 2.5, -2.5);
+		glVertex3f(2.5, 2.5, -1.25);
+		glVertex3f(1.25, 2.5, -2.5);
+		glVertex3f(-2.5, 2.5, 1.25);
+		glVertex3f(-1.25, 2.5, 2.5);
+		glVertex3f(2.5, 2.5, 1.25);
+		glVertex3f(2.5, 2.5, -1.25);
+		glVertex3f(-2.5, 2.5, -1.25);
+		glVertex3f(-2.5, 2.5, 1.25);
+		glVertex3f(1.25, 2.5, 2.5);
+		glVertex3f(1.25, 2.5, -2.5);
+		glVertex3f(-1.25, 2.5, -2.5);
+		glVertex3f(-1.25, 2.5, 2.5);
+		glEnd();
+	}, [](){}, [](){
+		parts[14].explode(); //Part above also explodes
+	});
+	
+	//Windmill body
+	parts[14] = MillPart(20, 15, 0, [](){
+		glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
+		glMaterialfv(GL_FRONT, GL_DIFFUSE, diffWoodLightgreen);
+		glBegin(GL_QUADS);
+		glNormal3f(0, -1, 0);
+		glVertex3f(3, 0, 1.5);
+		glVertex3f(-3, 0, 1.5);
+		glVertex3f(-3, 0, -1.5);
+		glVertex3f(3, 0, -1.5);
+		glVertex3f(1.5, 0, 3);
+		glVertex3f(1.5, 0, -3);
+		glVertex3f(-1.5, 0, -3);
+		glVertex3f(-1.5, 0, 3);
+		glVertex3f(3, 0, 1.5);
+		glVertex3f(1.5, 0, 3);
+		glVertex3f(-3, 0, -1.5);
+		glVertex3f(-1.5, 0, -3);
+		glVertex3f(3, 0, -1.5);
+		glVertex3f(1.5, 0, -3);
+		glVertex3f(-3, 0, 1.5);
+		glVertex3f(-1.5, 0, 3);
+		glNormal3f(1, 0.5, 0);
+		glVertex3f(3, 0, 1.5);
+		glVertex3f(3, 0, -1.5);
+		glVertex3f(2.5, 1, -1.25);
+		glVertex3f(2.5, 1, 1.25);
+		glNormal3f(1, 1, 1);
+		glVertex3f(3, 0, 1.5);
+		glVertex3f(1.5, 0, 3);
+		glVertex3f(1.25, 1, 2.5);
+		glVertex3f(2.5, 1, 1.25);
+		glNormal3f(0, 0.5, 1);
+		glVertex3f(1.5, 0, 3);
+		glVertex3f(-1.5, 0, 3);
+		glVertex3f(-1.25, 1, 2.5);
+		glVertex3f(1.25, 1, 2.5);
+		glNormal3f(-1, 1, 1);
+		glVertex3f(-1.5, 0, 3);
+		glVertex3f(-3, 0, 1.5);
+		glVertex3f(-2.5, 1, 1.25);
+		glVertex3f(-1.25, 1, 2.5);
+		glNormal3f(-1, 0.5, 0);
+		glVertex3f(-3, 0, 1.5);
+		glVertex3f(-3, 0, -1.5);
+		glVertex3f(-2.5, 1, -1.25);
+		glVertex3f(-2.5, 1, 1.25);
+		glNormal3f(-1, 1, -1);
+		glVertex3f(-3, 0, -1.5);
+		glVertex3f(-1.5, 0, -3);
+		glVertex3f(-1.25, 1, -2.5);
+		glVertex3f(-2.5, 1, -1.25);
+		glNormal3f(0, 0.5, -1);
+		glVertex3f(-1.5, 0, -3);
+		glVertex3f(1.5, 0, -3);
+		glVertex3f(1.25, 1, -2.5);
+		glVertex3f(-1.25, 1, -2.5);
+		glNormal3f(1, 1, -1);
+		glVertex3f(1.5, 0, -3);
+		glVertex3f(3, 0, -1.5);
+		glVertex3f(2.5, 1, -1.25);
+		glVertex3f(1.25, 1, -2.5);
+		glNormal3f(1, 0.25, 0);
+		glVertex3f(2.5, 1, -1.25);
+		glVertex3f(2.5, 1, 1.25);
+		glVertex3f(2, 3, 1);
+		glVertex3f(2, 3, -1);
+		glNormal3f(1, 0.5, 1);
+		glVertex3f(2.5, 1, 1.25);
+		glVertex3f(1.25, 1, 2.5);
+		glVertex3f(1, 3, 2);
+		glVertex3f(2, 3, 1);
+		glNormal3f(0, 0.25, 1);
+		glVertex3f(1.25, 1, 2.5);
+		glVertex3f(-1.25, 1, 2.5);
+		glVertex3f(-1, 3, 2);
+		glVertex3f(1, 3, 2);
+		glNormal3f(-1, 0.5, 1);
+		glVertex3f(-1.25, 1, 2.5);
+		glVertex3f(-2.5, 1, 1.25);
+		glVertex3f(-2, 3, 1);
+		glVertex3f(-1, 3, 2);
+		glNormal3f(-1, 0.25, 0);
+		glVertex3f(-2.5, 1, 1.25);
+		glVertex3f(-2.5, 1, -1.25);
+		glVertex3f(-2, 3, -1);
+		glVertex3f(-2, 3, 1);
+		glNormal3f(-1, 0.5, -1);
+		glVertex3f(-2.5, 1, -1.25);
+		glVertex3f(-1.25, 1, -2.5);
+		glVertex3f(-1, 3, -2);
+		glVertex3f(-2, 3, -1);
+		glNormal3f(0, 0.25, -1);
+		glVertex3f(-1.25, 1, -2.5);
+		glVertex3f(1.25, 1, -2.5);
+		glVertex3f(1, 3, -2);
+		glVertex3f(-1, 3, -2);
+		glNormal3f(1, 0.5, -1);
+		glVertex3f(1.25, 1, -2.5);
+		glVertex3f(2.5, 1, -1.25);
+		glVertex3f(2, 3, -1);
+		glVertex3f(1, 3, -2);
+		glNormal3f(1, 0, 0);
+		glVertex3f(2, 3, -1);
+		glVertex3f(2, 3, 1);
+		glVertex3f(2, 7, 1);
+		glVertex3f(2, 7, -1);
+		glNormal3f(1, 0, 1);
+		glVertex3f(2, 3, 1);
+		glVertex3f(1, 3, 2);
+		glVertex3f(1, 7, 2);
+		glVertex3f(2, 7, 1);
+		glNormal3f(0, 0, 1);
+		glVertex3f(1, 3, 2);
+		glVertex3f(-1, 3, 2);
+		glVertex3f(-1, 7, 2);
+		glVertex3f(1, 7, 2);
+		glNormal3f(-1, 0, 1);
+		glVertex3f(-1, 3, 2);
+		glVertex3f(-2, 3, 1);
+		glVertex3f(-2, 7, 1);
+		glVertex3f(-1, 7, 2);
+		glNormal3f(-1, 0, 0);
+		glVertex3f(-2, 3, 1);
+		glVertex3f(-2, 3, -1);
+		glVertex3f(-2, 7, -1);
+		glVertex3f(-2, 7, 1);
+		glNormal3f(-1, 0, -1);
+		glVertex3f(-2, 3, -1);
+		glVertex3f(-1, 3, -2);
+		glVertex3f(-1, 7, -2);
+		glVertex3f(-2, 7, -1);
+		glNormal3f(0, 0, -1);
+		glVertex3f(-1, 3, -2);
+		glVertex3f(1, 3, -2);
+		glVertex3f(1, 7, -2);
+		glVertex3f(-1, 7, -2);
+		glNormal3f(1, 0, -1);
+		glVertex3f(1, 3, -2);
+		glVertex3f(2, 3, -1);
+		glVertex3f(2, 7, -1);
+		glVertex3f(1, 7, -2);
+		glNormal3f(0, 1, 0);
+		glVertex3f(1, 7, 2);
+		glVertex3f(-1, 7, 2);
+		glVertex3f(-1, 7, -2);
+		glVertex3f(1, 7, -2);
+		glVertex3f(2, 7, 1);
+		glVertex3f(2, 7, -1);
+		glVertex3f(-2, 7, -1);
+		glVertex3f(-2, 7, 1);
+		glVertex3f(2, 7, 1);
+		glVertex3f(1, 7, 2);
+		glVertex3f(-2, 7, -1);
+		glVertex3f(-1, 7, -2);
+		glVertex3f(2, 7, -1);
+		glVertex3f(1, 7, -2);
+		glVertex3f(-2, 7, 1);
+		glVertex3f(-1, 7, 2);
 		glEnd();
 	}, [](){}, [](){
 		
@@ -506,10 +940,9 @@ void initWindmill(){
 }
 
 void drawWindmill(){
-	for(int i = 0;i < 11;i++) parts[i].draw();
-	return;
+	for(int i = 0;i < 15;i++) parts[i].draw();
 	
-	glTranslatef(20, 0, 0);
+	glTranslatef(-20, 0, 0);
 	glMaterialfv(GL_FRONT, GL_SHININESS, low_shininess);
 	glMaterialfv(GL_FRONT, GL_SPECULAR, no_mat);
 	//Base house
@@ -947,7 +1380,7 @@ void drawWindmill(){
 	drawBox(-1.55, -6.9, 3.85, 1.5, 6.4, 0.1);
 	glRotatef(-angle, 0, 0, 1);
 	glTranslatef(0, -22.5, 0);
-	glTranslatef(0, 0, -20);
+	glTranslatef(20, 0, 0);
 }
 
 void update() {
@@ -1042,7 +1475,7 @@ void timer(int value) {
 		particles[i].z = particles[i].z + particles[i].v_z * time;
 	}
 	
-	for(int i = 0;i < 11;i++) parts[i].update(time);
+	for(int i = 0;i < 15;i++) parts[i].update(time);
 	
 	glutPostRedisplay();
 	glutTimerFunc(50, &timer, 0);
