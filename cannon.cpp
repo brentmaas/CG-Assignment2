@@ -11,6 +11,7 @@
 #include <time.h>
 #include <functional>
 
+//Particles count parameters
 const int MAXPARTICLES = 1000;
 const int particlesPerExplosion = 8;
 int explosionCounter = 0;
@@ -19,8 +20,10 @@ int explosionCounter = 0;
 //1 walkway, 1 windmill base, 1 windmill body, 1 cap, 1 blades = 33 parts
 const int numMillParts = 33;
 
+//Target frames per second
 const float targetFPS = 60.0;
 
+//Viewer position and direction parameters
 float g_posX = 0.0, g_posY = 25.0, g_posZ = 50.0;
 float g_orientation = 15.0; // y axis
 
@@ -45,7 +48,7 @@ const GLfloat mat_emission[] = { 0.3, 0.2, 0.2, 0.0 };
 
 const GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
 
-int spinflag = 1;
+int spinflag = 1; //Windmill spinning or not
 float angle = 0; //The rotation angle of the windmill's blades
 const float dangle = 15.0; //Change in angle per second
 
@@ -58,10 +61,13 @@ GLfloat diffRooftiles[] = {1.0, 0.5, 0.0, 1.0};
 GLfloat diffFabricWhite[] = {0.9, 0.9, 0.9, 1.0};
 GLfloat diffFabricOrange[] = {0.9, 0.5, 0.1, 1.0};
 
+//Values for resetting
 const static float orig_posX = g_posX, orig_posY = g_posY, orig_posZ = g_posZ,
 		orig_orientation = g_orientation, g = 9.81, G = 50;
 
+//Flags for various gravity options
 static bool gravity_toggle = false, well_toggle = false;
+//Particle data
 struct pinfo {
 	float width;
 	float x, y, z;
@@ -73,6 +79,7 @@ struct pinfo {
 //Class to handle drawing and falling apart of parts of the windmill
 class MillPart {
 public:
+	//Default constructor
 	MillPart(){
 		x = 0;
 		y = 0;
@@ -90,6 +97,7 @@ public:
 		explodedBy = -1;
 	}
 	
+	//Constructor
 	MillPart(float x, float y, float z, std::function<void()> onDraw, std::function<void()> onTimer, std::function<void()> onHit,
 			float bx, float by, float bz, float bw, float bh, float bd){
 		this->x = x;
@@ -111,12 +119,14 @@ public:
 		explodedBy = -1;
 	}
 	
+	//Drawing function
 	void draw(){
 		glTranslatef(x, y, z);
 		onDraw();
 		glTranslatef(-x, -y, -z);
 	}
 	
+	//Position and velocity update function
 	void update(float dt){
 		if(exploded){
 			if(gravity_toggle) vy -= g * dt;
@@ -145,6 +155,7 @@ public:
 		}
 	}
 	
+	//Function to call when a part explodes
 	void explode(int explodedBy){
 		if(!exploded){
 			this->explodedBy = explodedBy;
@@ -162,19 +173,21 @@ public:
 		exploded = true;
 	}
 	
+	//Function to test if something at a given position has collided with (= is inside) the part
 	bool testBounding(float x, float y, float z){
 		return x >= bx && x <= bx + bw && y >= by && y <= by + bh && z >= bz && z <= bz + bd;
 	}
 	
 	float x, y, z, vx, vy, vz, bx, by, bz, bw, bh, bd; //Position, velocity, bounding box position, bounding box width/height/depth
-	int explodedBy;
+	int explodedBy; //Index of particle which exploded this part, used to pass explosion direction to attached parts
 	//Event functions for drawing, timer updates, and collision events
 	std::function<void()> onDraw, onTimer, onHit;
-	bool exploded;
+	bool exploded; //Flag for checking if the part has exploded
 };
 
 MillPart parts[numMillParts];
 
+//Fire the particles straight up from the ground
 void fireCannon() {
 	for (int i = 0; i < MAXPARTICLES; i++) {
 		particles[i].width = 3.0 * (rand() / (float) RAND_MAX) + 1.0;
@@ -191,6 +204,7 @@ void fireCannon() {
 	}
 }
 
+//Fire the particles in all direction from somewhere in the air
 void doExplosion() {
 	const float height = 50.0 * (rand() / (float) RAND_MAX) + 10.0, r = 1.0
 			* (rand() / (float) RAND_MAX), g = 1.0
@@ -217,13 +231,15 @@ void drawOneParticle() {
 }
 
 void drawParticles() {
+	//Draw the well
 	if (well_toggle) {
 		glTranslatef(0, 50, 0);
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, white);
 		drawOneParticle();
 		glTranslatef(0, -50, 0);
 	}
-	//Particles that have exploded may not be rendered
+	
+	//Particles that have exploded are not rendered
 	for (int i = 0;i < MAXPARTICLES + explosionCounter * particlesPerExplosion;i++) if(!particles[i].exploded){
 		glTranslatef(particles[i].x, particles[i].y, particles[i].z);
 		glScalef(particles[i].width, particles[i].width, particles[i].width);
@@ -236,11 +252,11 @@ void drawParticles() {
 	}
 }
 
+//Keyboard function
 void keyboard(unsigned char key, int x, int y) {
 	switch (key) {
 	case '1': //test windmill explosion
 		for(int i = 0;i < numMillParts;i++) parts[i].explode(-1);
-		//parts[rand() % numMillParts].explode(-1);
 		break;
 	case '4': //move the light up
 		ly++;
@@ -319,6 +335,7 @@ void keyboard(unsigned char key, int x, int y) {
 	glutPostRedisplay();
 }
 
+//Draw a box at (x, y, z) width dimensions (width, height, depth)
 void drawBox(float x, float y, float z, float width, float height, float depth){
 	glBegin(GL_QUADS);
 	//bottom
@@ -360,7 +377,8 @@ void drawBox(float x, float y, float z, float width, float height, float depth){
 	glEnd();
 }
 
-//https://molens.hippoextranet.nl/07071954/noordholland/752DeHuisman-Zaandam-1.jpg
+//Initialise the windmill by setting all parts
+//molens.hippoextranet.nl/07071954/noordholland/752DeHuisman-Zaandam-1.jpg
 void initWindmill(){
 	//Base house parts
 	parts[0] = MillPart(17.5, 0, -2.5,[](){
@@ -1058,7 +1076,7 @@ void initWindmill(){
 	}, [](){
 		//Roll away after hitting the ground (and ground is a thing)
 		if(spinflag && gravity_toggle && parts[16].exploded && parts[16].y <= 0) parts[16].vx = -7.0 * M_PI * dangle / 180.0;
-		else parts[16].vx = 0;
+		//else parts[16].vx = 0;
 	}, [](){}, 13, 8.5, 3.5, 14, 14, 1);
 	
 	//Shed parts
@@ -1410,10 +1428,12 @@ void initWindmill(){
 	}, [](){}, [](){}, 20, 5, -10, 5, 5, 5);
 }
 
+//Function for drawing the windmill
 void drawWindmill(){
 	for(int i = 0;i < numMillParts;i++) parts[i].draw();
 }
 
+//Update function
 void update() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -1430,6 +1450,7 @@ void update() {
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
 	
 	glColor3f(1.0, 1.0, 1.0);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, white);
 	// cannon base
 	glBegin(GL_QUADS);
 	glNormal3f(0, 1, 0);
@@ -1447,14 +1468,10 @@ void update() {
 	glVertex3f(-40.0, 0.0, -40.0);
 	glEnd();
 	
-	glPushMatrix();
-	drawParticles();
-	glPopMatrix();
+	//Draw mill
 	drawWindmill();
 	
-	glTranslatef(g_posX, g_posY, g_posZ);
-	glRotatef(-g_orientation, 0.0, 1.0, 0.0);
-	
+	//Do lighting
 	glTranslatef(lx, ly, lz);
 	glMaterialfv(GL_FRONT, GL_AMBIENT, default_ambient);
 	glMaterialfv(GL_FRONT, GL_EMISSION, no_mat);
@@ -1468,16 +1485,26 @@ void update() {
 	}
 	glTranslatef(-lx, -ly, -lz);
 	
+	//Draw particles
+	drawParticles();
+	
+	glTranslatef(g_posX, g_posY, g_posZ);
+	glRotatef(-g_orientation, 0.0, 1.0, 0.0);
+	
 	glutSwapBuffers();
 }
 
+//Timer function
 void timer(int value) {
+	//Get and handle time
 	static int lastTime;
 	int thisTime;
 	float time;
 	thisTime = glutGet(GLUT_ELAPSED_TIME);
 	time = (thisTime - lastTime) / 1000.0;
 	lastTime = thisTime;
+	
+	//Update all particles
 	for (int i = 0; i < MAXPARTICLES + explosionCounter * particlesPerExplosion;i++) {
 		if (gravity_toggle)
 			particles[i].v_y -= g * time;
@@ -1511,6 +1538,7 @@ void timer(int value) {
 	for(int i = 0;i < numMillParts;i++) if(!parts[i].exploded) for(int j = 0;j < MAXPARTICLES;j++) {
 		if(!particles[j].exploded && parts[i].testBounding(particles[j].x, particles[j].y, particles[j].z)){
 			parts[i].explode(j);
+			//Explode into multiple particles
 			for(int k = 0;k < particlesPerExplosion;k++){
 				particles[MAXPARTICLES + explosionCounter * particlesPerExplosion + k].x = particles[j].x;
 				particles[MAXPARTICLES + explosionCounter * particlesPerExplosion + k].y = particles[j].y;
@@ -1530,6 +1558,7 @@ void timer(int value) {
 		}
 	}
 	
+	//Update spinning and mill parts
 	if(spinflag) angle += dangle * time;
 	for(int i = 0;i < numMillParts;i++) parts[i].update(time);
 	
@@ -1537,6 +1566,7 @@ void timer(int value) {
 	glutTimerFunc(1.0 / targetFPS, &timer, 0);
 }
 
+//Reshape function
 void reshape(int w, int h) {
 	glViewport(0, 0, (GLsizei) w, (GLsizei) h); //set the viewport to the current window specifications
 	glMatrixMode(GL_PROJECTION); //set the matrix to projection
@@ -1547,28 +1577,35 @@ void reshape(int w, int h) {
 }
 
 int main(int argc, char *argv[]) {
-	srand(time(NULL));
+	srand(time(NULL)); //Initialise random generator
+	
+	//Create window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(1200, 800);
 	glutCreateWindow("Particle Cannon");
+	
+	//Initialise lighting
 	glEnable(GL_NORMALIZE);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
 	glShadeModel(GL_SMOOTH);
+	
 	glMatrixMode(GL_PROJECTION);
 	gluPerspective(120.0, 1.0, 1.0, 1000.0);
 	glEnable(GL_DEPTH_TEST);
 	
 	initWindmill();
 	
+	//Set functions
 	glutDisplayFunc(&update);
 	glutIdleFunc(&update);
 	glutReshapeFunc(&reshape);
 	glutKeyboardFunc(&keyboard);
 	glutTimerFunc(1.0 / targetFPS, &timer, 0);
+	
 	glutMainLoop();
 	return 0;
 }
