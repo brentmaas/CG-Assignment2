@@ -11,7 +11,7 @@
 #include <time.h>
 #include <functional>
 
-const int MAXPARTICLES = 25;
+const int MAXPARTICLES = 1000;
 const int particlesPerExplosion = 8;
 int explosionCounter = 0;
 
@@ -1447,8 +1447,10 @@ void update() {
 	glVertex3f(-40.0, 0.0, -40.0);
 	glEnd();
 	
-	drawWindmill();
+	glPushMatrix();
 	drawParticles();
+	glPopMatrix();
+	drawWindmill();
 	
 	glTranslatef(g_posX, g_posY, g_posZ);
 	glRotatef(-g_orientation, 0.0, 1.0, 0.0);
